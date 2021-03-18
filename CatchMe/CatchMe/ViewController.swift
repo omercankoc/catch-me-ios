@@ -5,7 +5,7 @@ class ViewController: UIViewController {
     var timer = Timer()
     var visibilityTimer = Timer()
     
-    var time : Int = 10
+    var time : Int = 60
     var score : Int = 0
     var highScore : Int = 0
     
@@ -29,6 +29,17 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         labelTime.text = String(time)
         labelScore.text = "Score : \(score)"
+        
+        // Hish Score degerini kontrol et.
+        let storedHighScore = UserDefaults.standard.object(forKey: "highScore")
+        if storedHighScore == nil{
+            highScore = 0
+            labelHighScore.text = "High Score : \(highScore)"
+        }
+        if let newScore = storedHighScore as? Int{
+            highScore = newScore
+            labelHighScore.text = "High Score : \(highScore)"
+        }
         
         // Nesneyi tiklanabilir yap.
         point11.isUserInteractionEnabled = true
@@ -106,10 +117,26 @@ class ViewController: UIViewController {
                 point.isHidden = true
             }
             
+            // En yuksek skoru goster.
+            if self.score > self.highScore {
+                self.highScore = self.score
+                labelHighScore.text = "High Score \(highScore)"
+                UserDefaults.standard.set(self.highScore, forKey: "highScore")
+            }
+            
+            // Alert tanimla.
             let alert = UIAlertController(title: "Time is Over!", message: "Do you want to play again?", preferredStyle: UIAlertController.Style.alert)
+            // Devam edilmeyecek...
             let no = UIAlertAction(title: "No", style: UIAlertAction.Style.cancel, handler: nil)
+            // Devam edilecek...
             let yes = UIAlertAction(title: "Yes", style: UIAlertAction.Style.default) { (UIAlertAction) in
+                self.score  = 0
+                self.labelScore.text = "Score \(self.score)"
+                self.time = 60
+                self.labelTime.text = String(self.time)
+                self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.timeCounter), userInfo: nil, repeats: true)
                 
+                self.visibilityTimer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.visibilityPoints), userInfo: nil, repeats: true)
             }
             alert.addAction(no)
             alert.addAction(yes)
@@ -118,8 +145,15 @@ class ViewController: UIViewController {
         }
     }
 
+    // Yeniden baslat...
     @IBAction func restart(_ sender: Any) {
-    
+        score  = 0
+        labelScore.text = "Score \(score)"
+        time = 60
+        labelTime.text = String(time)
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(timeCounter), userInfo: nil, repeats: true)
+        
+        visibilityTimer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(visibilityPoints), userInfo: nil, repeats: true)
     }
     
     
